@@ -136,11 +136,11 @@ export default function App() {
       {/* Header */}
       <header className={`border-b ${D ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} shadow-sm sticky top-0 z-10`}>
         <div className="max-w-2xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">🧠 AI Study Tool</h1>
-            <p className={`text-xs sm:text-sm mt-0.5 ${D ? 'text-gray-400' : 'text-gray-500'}`}>
-              Turn notes into flashcards, quizzes &amp; summaries instantly.
-            </p>
+          <div className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight">AI Study Tool</h1>
+            <span className={`text-xs sm:text-sm font-medium ${D ? 'text-gray-400' : 'text-gray-500'}`}>
+              (Turn notes into flashcards, quizzes &amp; summaries instantly)
+            </span>
           </div>
           <button
             onClick={() => setDark(d => !d)}
