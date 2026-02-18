@@ -59,6 +59,8 @@ function ActionBtn({ onClick, children, green, dark }) {
   )
 }
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+
 export default function App() {
   const [file, setFile] = useState(null)
   const [fileName, setFileName] = useState(null)
@@ -87,11 +89,11 @@ export default function App() {
     try {
       const formData = new FormData()
       formData.append('file', file)
-      const uploadRes = await fetch('http://localhost:5000/upload', { method: 'POST', body: formData })
+      const uploadRes = await fetch(`${API_BASE_URL}/upload`, { method: 'POST', body: formData })
       const uploadData = await uploadRes.json()
       if (!uploadRes.ok) throw new Error(uploadData.error || 'Upload failed')
 
-      const genRes = await fetch('http://localhost:5000/generate', {
+      const genRes = await fetch(`${API_BASE_URL}/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text: uploadData.text }),
