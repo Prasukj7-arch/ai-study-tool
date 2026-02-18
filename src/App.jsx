@@ -5,8 +5,7 @@ const TABS = ['Flashcards', 'Quiz', 'Summary']
 export default function App() {
   const [file, setFile] = useState(null)
   const [fileName, setFileName] = useState(null)
-  const [extractedText, setExtractedText] = useState(null)
-  const [result, setResult] = useState(null)   // { flashcards, quiz, summary }
+  const [result, setResult] = useState(null)
   const [activeTab, setActiveTab] = useState('Flashcards')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -16,10 +15,16 @@ export default function App() {
     if (selected) {
       setFile(selected)
       setFileName(selected.name)
-      setExtractedText(null)
       setResult(null)
       setError(null)
     }
+  }
+
+  function handleReset() {
+    setFile(null)
+    setFileName(null)
+    setResult(null)
+    setError(null)
   }
 
   async function handleGenerate() {
@@ -35,7 +40,6 @@ export default function App() {
       const uploadRes = await fetch('http://localhost:5000/upload', { method: 'POST', body: formData })
       const uploadData = await uploadRes.json()
       if (!uploadRes.ok) throw new Error(uploadData.error || 'Upload failed')
-      setExtractedText(uploadData.text)
 
       // Step 2: Generate study material
       const genRes = await fetch('http://localhost:5000/generate', {
@@ -59,7 +63,7 @@ export default function App() {
       {/* Header */}
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-3xl mx-auto px-6 py-4">
-          <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">AI Study Tool</h1>
+          <h1 className="text-2xl font-semibold text-gray-800 tracking-tight">🧠 AI Study Tool</h1>
           <p className="text-sm text-gray-500 mt-1">
             Upload your notes and convert them into flashcards, quizzes and summaries instantly.
           </p>
@@ -87,19 +91,29 @@ export default function App() {
             </label>
           </div>
 
-          <button
-            disabled={!file || loading}
-            onClick={handleGenerate}
-            className="mt-5 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
-          >
-            {loading ? 'Processing…' : 'Generate Study Material'}
-          </button>
+          <div className="flex gap-3 mt-5">
+            <button
+              disabled={!file || loading}
+              onClick={handleGenerate}
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
+            >
+              {loading ? 'Generating flashcards and quiz…' : 'Generate Study Material'}
+            </button>
+            {(result || error) && (
+              <button
+                onClick={handleReset}
+                className="px-4 py-2.5 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                ↺ New Upload
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Error */}
         {error && (
           <div className="w-full max-w-xl mt-6 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
-            {error}
+            ⚠️ {error}
           </div>
         )}
 
@@ -126,7 +140,7 @@ export default function App() {
             {activeTab === 'Flashcards' && (
               <div className="flex flex-col gap-3">
                 {result.flashcards?.map((card, i) => (
-                  <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 max-h-40 overflow-y-auto">
                     <p className="text-sm font-semibold text-gray-800 mb-1">Q: {card.question}</p>
                     <p className="text-sm text-gray-600">A: {card.answer}</p>
                   </div>
@@ -138,7 +152,7 @@ export default function App() {
             {activeTab === 'Quiz' && (
               <div className="flex flex-col gap-4">
                 {result.quiz?.map((q, i) => (
-                  <div key={i} className="bg-white border border-gray-200 rounded-xl p-4">
+                  <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 max-h-56 overflow-y-auto">
                     <p className="text-sm font-semibold text-gray-800 mb-2">{i + 1}. {q.question}</p>
                     <ul className="flex flex-col gap-1">
                       {q.options?.map((opt, j) => (
@@ -175,6 +189,22 @@ export default function App() {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-white py-4">
+        <p className="text-center text-xs text-gray-400">
+          Built by{' '}
+          <a
+            href="https://github.com/Prasukj7-arch"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-500 hover:underline"
+          >
+            Prasuk Jain
+          </a>
+          {' '}· AI Study Tool
+        </p>
+      </footer>
     </div>
   )
 }
