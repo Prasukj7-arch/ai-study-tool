@@ -1,11 +1,45 @@
 import { useState } from 'react'
 
 export default function App() {
+  const [file, setFile] = useState(null)
   const [fileName, setFileName] = useState(null)
+  const [extractedText, setExtractedText] = useState(null)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
 
   function handleFileChange(e) {
-    const file = e.target.files[0]
-    if (file) setFileName(file.name)
+    const selected = e.target.files[0]
+    if (selected) {
+      setFile(selected)
+      setFileName(selected.name)
+      setExtractedText(null)
+      setError(null)
+    }
+  }
+
+  async function handleGenerate() {
+    if (!file) return
+
+    const formData = new FormData()
+    formData.append('file', file)
+
+    setLoading(true)
+    setError(null)
+    setExtractedText(null)
+
+    try {
+      const res = await fetch('http://localhost:5000/upload', {
+        method: 'POST',
+        body: formData,
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Upload failed')
+      setExtractedText(data.text)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -45,7 +79,7 @@ export default function App() {
               {fileName ? (
                 <span className="text-blue-600 font-medium">{fileName}</span>
               ) : (
-                'Upload a PDF, image, or text file to get started'
+                'Upload a PDF or text file to get started'
               )}
             </p>
 
@@ -56,30 +90,48 @@ export default function App() {
               <input
                 type="file"
                 className="hidden"
-                accept=".pdf,.txt,.png,.jpg,.jpeg"
+                accept=".pdf,.txt"
                 onChange={handleFileChange}
               />
             </label>
           </div>
 
           <button
-            disabled={!fileName}
+            disabled={!file || loading}
+            onClick={handleGenerate}
             className="mt-5 w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-600"
           >
-            Generate Study Material
+            {loading ? 'Processing...' : 'Generate Study Material'}
           </button>
         </div>
 
         {/* Results section */}
-        <div className="w-full max-w-xl mt-8">
+        <div className="w-full max-w-xl mt-8 mb-12">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
             Results
           </h2>
-          <div className="bg-white border border-gray-200 rounded-xl min-h-48 flex items-center justify-center">
-            <p className="text-gray-400 text-sm">
-              Upload your notes and click generate to see flashcards, quiz and summary.
-            </p>
-          </div>
+
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">
+              {error}
+            </div>
+          )}
+
+          {!error && (
+            <div className="bg-white border border-gray-200 rounded-xl min-h-48 p-5">
+              {extractedText ? (
+                <pre className="text-sm text-gray-700 whitespace-pre-wrap break-words font-sans">
+                  {extractedText}
+                </pre>
+              ) : (
+                <div className="h-full flex items-center justify-center min-h-40">
+                  <p className="text-gray-400 text-sm">
+                    Upload your notes and click generate to see flashcards, quiz and summary.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>
