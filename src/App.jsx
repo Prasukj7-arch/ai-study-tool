@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import FlashCard from './FlashCard'
 
 const TABS = ['Flashcards', 'Quiz', 'Summary']
 
@@ -127,8 +128,8 @@ export default function App() {
                   key={tab}
                   onClick={() => setActiveTab(tab)}
                   className={`flex-1 py-2 text-sm font-medium rounded-lg transition-colors ${activeTab === tab
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700'
                     }`}
                 >
                   {tab}
@@ -138,14 +139,7 @@ export default function App() {
 
             {/* Flashcards */}
             {activeTab === 'Flashcards' && (
-              <div className="flex flex-col gap-3">
-                {result.flashcards?.map((card, i) => (
-                  <div key={i} className="bg-white border border-gray-200 rounded-xl p-4 max-h-40 overflow-y-auto">
-                    <p className="text-sm font-semibold text-gray-800 mb-1">Q: {card.question}</p>
-                    <p className="text-sm text-gray-600">A: {card.answer}</p>
-                  </div>
-                ))}
-              </div>
+              <FlashCard cards={result.flashcards} />
             )}
 
             {/* Quiz */}
@@ -157,8 +151,8 @@ export default function App() {
                     <ul className="flex flex-col gap-1">
                       {q.options?.map((opt, j) => (
                         <li key={j} className={`text-sm px-3 py-1.5 rounded-lg ${opt.startsWith(q.answer)
-                            ? 'bg-green-50 text-green-700 font-medium'
-                            : 'text-gray-600'
+                          ? 'bg-green-50 text-green-700 font-medium'
+                          : 'text-gray-600'
                           }`}>
                           {opt}
                         </li>
