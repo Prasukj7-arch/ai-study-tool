@@ -11,14 +11,18 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(cors()); // Enable all origins for initial production test
 app.use(express.json());
+
+// Ensure uploads directory exists
+const uploadDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
 
 // Multer storage config — save to /uploads
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, 'uploads');
-        if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir);
         cb(null, uploadDir);
     },
     filename: (req, file, cb) => {
