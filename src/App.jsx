@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import FlashCard from './FlashCard'
+import QuizCard from './QuizCard'
 
 const TABS = ['Flashcards', 'Quiz', 'Summary']
 
@@ -240,25 +241,8 @@ export default function App() {
             {/* Task 3 — FlashCard with card-level copy */}
             {activeTab === 'Flashcards' && <FlashCard cards={result.flashcards} dark={D} onCopy={triggerCopy} />}
 
-            {activeTab === 'Quiz' && (
-              <div className="flex flex-col gap-4">
-                {result.quiz?.map((q, i) => (
-                  <div key={i} className={`rounded-2xl p-4 border ${D ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
-                    <p className="text-sm font-semibold mb-3">{i + 1}. {q.question}</p>
-                    <ul className="flex flex-col gap-1.5">
-                      {q.options?.map((opt, j) => (
-                        <li key={j} className={`text-sm px-3 py-2 rounded-xl ${opt.startsWith(q.answer)
-                          ? D ? 'bg-green-900/40 text-green-400 font-semibold' : 'bg-green-100 text-green-700 font-semibold'
-                          : D ? 'text-gray-400' : 'text-gray-600'
-                          }`}>
-                          {opt}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                ))}
-              </div>
-            )}
+            {activeTab === 'Quiz' && <QuizCard questions={result.quiz} dark={D} />}
+
 
             {activeTab === 'Summary' && (
               <div className={`rounded-2xl p-5 border ${D ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'}`}>
@@ -266,15 +250,17 @@ export default function App() {
               </div>
             )}
 
-            {/* Task 1 — Download at bottom, right-aligned */}
-            <div className="flex justify-end mt-4">
-              <ActionBtn onClick={handleDownload} dark={D}>
-                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                Download .txt
-              </ActionBtn>
-            </div>
+            {/* Download — full width at bottom */}
+            <button
+              onClick={handleDownload}
+              className={`mt-4 w-full inline-flex items-center justify-center gap-2 text-sm font-semibold px-4 py-3 rounded-xl border transition-all duration-200 active:scale-95
+                ${D ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'}`}
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+              </svg>
+              Download {activeTab} as .txt
+            </button>
           </div>
         )}
 
