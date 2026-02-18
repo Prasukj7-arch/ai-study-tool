@@ -86,18 +86,33 @@ app.post('/generate', async (req, res) => {
         return res.status(400).json({ error: 'No text provided.' });
     }
 
-    const prompt = `You are a study assistant. Based on the following notes, generate:
+    const prompt = `You are a study assistant. Based on the notes below, generate study material and respond ONLY with valid JSON — no explanation, no markdown, no code fences.
 
-1. FLASHCARDS (5–8 cards): Format each as Q: ... / A: ...
-2. QUIZ QUESTIONS (3–5 questions): Multiple choice with 4 options, mark the correct answer.
-3. SUMMARY: A concise 3–5 sentence summary of the key points.
+The JSON must follow this exact structure:
+{
+  "flashcards": [
+    { "question": "...", "answer": "..." }
+  ],
+  "quiz": [
+    {
+      "question": "...",
+      "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+      "answer": "A"
+    }
+  ],
+  "summary": "..."
+}
+
+Rules:
+- Generate 5–8 flashcards
+- Generate 3–5 quiz questions (multiple choice, 4 options each)
+- Summary should be 3–5 sentences
+- Return ONLY the JSON object, nothing else
 
 Notes:
 """
 ${text.slice(0, 3000)}
-"""
-
-Respond in clearly labeled sections: FLASHCARDS, QUIZ, SUMMARY.`;
+"""`;
 
     try {
         const response = await axios.post(
@@ -116,17 +131,32 @@ Respond in clearly labeled sections: FLASHCARDS, QUIZ, SUMMARY.`;
             }
         );
 
-        const aiText = response.data.choices[0].message.content;
-        console.log('\n--- AI Response ---');
-        console.log(aiText.substring(0, 500));
-        console.log('-------------------\n');
+        const rawText = response.data.choices[0].message.content;
 
-        res.json({ success: true, result: aiText });
+        // Strip markdown code fences if model wraps in ```json ... ```
+        const cleaned = rawText.replace(/^```(?:json)?\n?/i, '').replace(/```$/, '').trim();
+
+        let parsed;
+        try {
+            parsed = JSON.parse(cleaned);
+        } catch {
+            console.error('Failed to parse AI JSON:', cleaned.substring(0, 300));
+            return res.status(500).json({ error: 'AI returned invalid JSON. Try again.' });
+        }
+
+        console.log('\n--- AI Structured Response ---');
+        console.log('Flashcards:', parsed.flashcards?.length);
+        console.log('Quiz:', parsed.quiz?.length);
+        console.log('Summary:', parsed.summary?.substring(0, 100));
+        console.log('------------------------------\n');
+
+        res.json({ success: true, result: parsed });
     } catch (err) {
         console.error('Generate error:', err.response?.data || err.message);
         res.status(500).json({ error: err.response?.data?.error?.message || err.message });
     }
 });
+
 
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
