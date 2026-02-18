@@ -108,7 +108,7 @@ export default function App() {
         {/* Results section */}
         <div className="w-full max-w-xl mt-8 mb-12">
           <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide mb-3">
-            Results
+            Extracted Text Preview
           </h2>
 
           {error && (
@@ -121,7 +121,9 @@ export default function App() {
             <div className="bg-white border border-gray-200 rounded-xl min-h-48 p-5">
               {extractedText ? (
                 <pre className="text-sm text-gray-700 whitespace-pre-wrap break-words font-sans">
-                  {extractedText}
+                  {extractedText.length > 700
+                    ? extractedText.slice(0, 700) + '...'
+                    : extractedText}
                 </pre>
               ) : (
                 <div className="h-full flex items-center justify-center min-h-40">
