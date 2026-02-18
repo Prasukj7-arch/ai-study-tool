@@ -228,15 +228,17 @@ export default function App() {
               ))}
             </div>
 
-            {/* Task 1 — Only Copy at top, no Download */}
-            <div className="flex justify-end mb-3">
-              <ActionBtn onClick={handleCopy} green={copied} dark={D}>
-                {copied
-                  ? <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> Copied ✓</>
-                  : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy</>
-                }
-              </ActionBtn>
-            </div>
+            {/* Copy button — only shown for Summary (Flashcards/Quiz have in-card copy) */}
+            {activeTab === 'Summary' && (
+              <div className="flex justify-end mb-3">
+                <ActionBtn onClick={handleCopy} green={copied} dark={D}>
+                  {copied
+                    ? <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> Copied ✓</>
+                    : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy</>
+                  }
+                </ActionBtn>
+              </div>
+            )}
 
             {/* Task 3 — FlashCard with card-level copy */}
             {activeTab === 'Flashcards' && <FlashCard cards={result.flashcards} dark={D} onCopy={triggerCopy} />}

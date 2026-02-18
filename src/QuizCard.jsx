@@ -2,14 +2,13 @@ import { useState, useEffect } from 'react'
 
 export default function QuizCard({ questions, dark }) {
     const [index, setIndex] = useState(0)
-    const [selected, setSelected] = useState(null)   // option the user picked
-    const [submitted, setSubmitted] = useState(false) // whether they hit Submit
-    const [flipped, setFlipped] = useState(false)     // card flip state
+    const [selected, setSelected] = useState(null)
+    const [submitted, setSubmitted] = useState(false)
+    const [flipped, setFlipped] = useState(false)
 
     const D = dark
     const q = questions?.[index]
 
-    // Reset state when moving to a new question
     useEffect(() => {
         setSelected(null)
         setSubmitted(false)
@@ -21,7 +20,6 @@ export default function QuizCard({ questions, dark }) {
     function handleSubmit() {
         if (!selected) return
         setSubmitted(true)
-        // Small delay so user sees the submit, then flip
         setTimeout(() => setFlipped(true), 300)
     }
 
@@ -34,23 +32,40 @@ export default function QuizCard({ questions, dark }) {
                 Question {index + 1} of {questions.length}
             </p>
 
-            {/* Flip card */}
+            {/* Flip card — fixed height so front and back match */}
             <div className="w-full" style={{ perspective: '1000px' }}>
                 <div style={{
                     transition: 'transform 0.55s',
                     transformStyle: 'preserve-3d',
                     transform: flipped ? 'rotateY(180deg)' : 'rotateY(0deg)',
                     position: 'relative',
-                    minHeight: '320px',
+                    minHeight: '380px',
                 }}>
 
-                    {/* FRONT — Question + Options */}
+                    {/* FRONT — Question + Options + Submit (all inside the card) */}
                     <div
                         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden' }}
                         className={`absolute inset-0 rounded-2xl p-5 flex flex-col border-2
               ${D ? 'bg-gray-900 border-gray-700' : 'bg-white border-blue-100'}`}
                     >
-                        <span className="text-xs font-bold text-blue-500 uppercase tracking-widest mb-3">Question</span>
+                        {/* Card header row: label + copy button */}
+                        <div className="flex items-center justify-between mb-3">
+                            <span className="text-xs font-bold text-blue-500 uppercase tracking-widest">Question</span>
+                            <button
+                                onClick={() => {
+                                    const text = `${q.question}\n${q.options?.join('\n')}\nAnswer: ${q.answer}`
+                                    navigator.clipboard.writeText(text)
+                                }}
+                                title="Copy question"
+                                className={`p-1.5 rounded-lg transition-colors ${D ? 'text-gray-500 hover:text-gray-300 hover:bg-gray-800' : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'}`}
+                            >
+                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                        d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        </div>
+
                         <p className={`text-sm font-semibold leading-relaxed mb-4 ${D ? 'text-gray-100' : 'text-gray-800'}`}>
                             {q.question}
                         </p>
@@ -81,7 +96,7 @@ export default function QuizCard({ questions, dark }) {
                             })}
                         </ul>
 
-                        {/* Submit */}
+                        {/* Submit — inside the card, below options */}
                         <button
                             onClick={handleSubmit}
                             disabled={!selected || submitted}
@@ -95,10 +110,7 @@ export default function QuizCard({ questions, dark }) {
                     <div
                         style={{ backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
                         className={`absolute inset-0 rounded-2xl p-5 flex flex-col items-center justify-center gap-4
-              ${isCorrect
-                                ? 'bg-green-500'
-                                : 'bg-red-500'
-                            }`}
+              ${isCorrect ? 'bg-green-500' : 'bg-red-500'}`}
                     >
                         <div className="text-4xl">{isCorrect ? '🎉' : '❌'}</div>
                         <p className="text-white font-bold text-lg">{isCorrect ? 'Correct!' : 'Not quite!'}</p>
@@ -116,7 +128,7 @@ export default function QuizCard({ questions, dark }) {
                 </div>
             </div>
 
-            {/* Navigation — only show after flip */}
+            {/* Navigation — below the card, not overlapping */}
             <div className="flex items-center gap-4">
                 <button
                     onClick={() => setIndex(i => Math.max(0, i - 1))}
