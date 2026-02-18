@@ -26,6 +26,38 @@ function Spinner({ dark }) {
   )
 }
 
+// Task 5 — Toast notification
+function Toast({ show }) {
+  return (
+    <div className={`fixed bottom-6 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ${show ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'}`}>
+      <div className="bg-gray-900 text-white text-sm font-medium px-4 py-2.5 rounded-xl shadow-lg flex items-center gap-2">
+        <svg className="w-4 h-4 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+        </svg>
+        Copied to clipboard
+      </div>
+    </div>
+  )
+}
+
+// Task 4 — Shared action button style
+function ActionBtn({ onClick, children, green, dark }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`inline-flex items-center gap-1.5 text-xs font-semibold px-4 py-2 rounded-xl border transition-all duration-200 active:scale-95
+        ${green
+          ? 'bg-green-500 border-green-500 text-white hover:bg-green-600'
+          : dark
+            ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700'
+            : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+        }`}
+    >
+      {children}
+    </button>
+  )
+}
+
 export default function App() {
   const [file, setFile] = useState(null)
   const [fileName, setFileName] = useState(null)
@@ -33,7 +65,8 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('Flashcards')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState(false)   // Task 2 — green copy state
+  const [toast, setToast] = useState(false)      // Task 5 — toast
   const [dark, setDark] = useState(() => window.matchMedia('(prefers-color-scheme: dark)').matches)
 
   useEffect(() => {
@@ -72,11 +105,16 @@ export default function App() {
     }
   }
 
-  function handleCopy() {
-    navigator.clipboard.writeText(formatAsText(result, activeTab)).then(() => {
-      setCopied(true); setTimeout(() => setCopied(false), 2000)
+  // Task 2 — green copy + Task 5 — toast
+  function triggerCopy(text) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true)
+      setToast(true)
+      setTimeout(() => { setCopied(false); setToast(false) }, 2000)
     })
   }
+
+  function handleCopy() { triggerCopy(formatAsText(result, activeTab)) }
 
   function handleDownload() {
     const blob = new Blob([formatAsText(result, activeTab)], { type: 'text/plain' })
@@ -90,6 +128,9 @@ export default function App() {
 
   return (
     <div className={`min-h-screen flex flex-col transition-colors duration-300 ${D ? 'bg-gray-950 text-gray-100' : 'bg-gray-50 text-gray-900'}`}>
+
+      {/* Task 5 — Toast */}
+      <Toast show={toast} />
 
       {/* Header */}
       <header className={`border-b ${D ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} shadow-sm sticky top-0 z-10`}>
@@ -133,7 +174,6 @@ export default function App() {
             </label>
           </div>
 
-          {/* Action buttons */}
           <div className="flex gap-3 mt-4">
             <button
               disabled={!file || loading}
@@ -163,7 +203,7 @@ export default function App() {
 
         {/* Error */}
         {error && (
-          <div className="w-full max-w-2xl mt-5 bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 text-red-600 dark:text-red-400 text-sm rounded-2xl px-4 py-3">
+          <div className={`w-full max-w-2xl mt-5 border text-sm rounded-2xl px-4 py-3 ${D ? 'bg-red-950 border-red-800 text-red-400' : 'bg-red-50 border-red-200 text-red-600'}`}>
             ⚠️ {error}
           </div>
         )}
@@ -178,8 +218,8 @@ export default function App() {
                   key={tab}
                   onClick={() => { setActiveTab(tab); setCopied(false) }}
                   className={`flex-1 py-2 text-sm font-semibold rounded-xl transition-colors ${activeTab === tab
-                      ? D ? 'bg-gray-700 text-blue-400 shadow' : 'bg-white text-blue-600 shadow-sm'
-                      : D ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
+                    ? D ? 'bg-gray-700 text-blue-400 shadow' : 'bg-white text-blue-600 shadow-sm'
+                    : D ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'
                     }`}
                 >
                   {tab}
@@ -187,21 +227,18 @@ export default function App() {
               ))}
             </div>
 
-            {/* Copy + Download */}
-            <div className="flex justify-end gap-2 mb-3">
-              <button onClick={handleCopy}
-                className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors
-                  ${D ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                {copied ? '✅ Copied!' : '📋 Copy'}
-              </button>
-              <button onClick={handleDownload}
-                className={`text-xs font-medium px-3 py-1.5 rounded-lg border transition-colors
-                  ${D ? 'bg-gray-800 border-gray-700 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'}`}>
-                ⬇️ Download .txt
-              </button>
+            {/* Task 1 — Only Copy at top, no Download */}
+            <div className="flex justify-end mb-3">
+              <ActionBtn onClick={handleCopy} green={copied} dark={D}>
+                {copied
+                  ? <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" /></svg> Copied ✓</>
+                  : <><svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg> Copy</>
+                }
+              </ActionBtn>
             </div>
 
-            {activeTab === 'Flashcards' && <FlashCard cards={result.flashcards} dark={D} />}
+            {/* Task 3 — FlashCard with card-level copy */}
+            {activeTab === 'Flashcards' && <FlashCard cards={result.flashcards} dark={D} onCopy={triggerCopy} />}
 
             {activeTab === 'Quiz' && (
               <div className="flex flex-col gap-4">
@@ -211,8 +248,8 @@ export default function App() {
                     <ul className="flex flex-col gap-1.5">
                       {q.options?.map((opt, j) => (
                         <li key={j} className={`text-sm px-3 py-2 rounded-xl ${opt.startsWith(q.answer)
-                            ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 font-semibold'
-                            : D ? 'text-gray-400' : 'text-gray-600'
+                          ? D ? 'bg-green-900/40 text-green-400 font-semibold' : 'bg-green-100 text-green-700 font-semibold'
+                          : D ? 'text-gray-400' : 'text-gray-600'
                           }`}>
                           {opt}
                         </li>
@@ -228,6 +265,16 @@ export default function App() {
                 <p className={`text-sm leading-relaxed ${D ? 'text-gray-300' : 'text-gray-700'}`}>{result.summary}</p>
               </div>
             )}
+
+            {/* Task 1 — Download at bottom, right-aligned */}
+            <div className="flex justify-end mt-4">
+              <ActionBtn onClick={handleDownload} dark={D}>
+                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Download .txt
+              </ActionBtn>
+            </div>
           </div>
         )}
 
